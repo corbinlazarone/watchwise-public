@@ -1,18 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
 import Header from "../header";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useUser } from "../../../utils/user-context";
 import Loading from "../../loading";
+import { ytService } from "../../../utils/services/yt.service";
 
 interface Channel {
-  id: number;
   channelId: string;
   channelName: string;
   channelThumbnailUrl: string;
   channelYoutubeLink: string;
   likeCount: number;
-  likedVideos: string[];
+  likedVideoInfos: {
+    videoId: string;
+    videoTitle: string;
+    videoThumbnailUrl: string;
+    videoLink: string;
+    channelId: string;
+    channelName: string;
+    publishedAt: string;
+  }[];
 }
 
 const ChannelSkeleton = () => (
@@ -31,6 +40,7 @@ export default function Channels() {
   const [sortedChannels, setSortedChannels] = useState<Channel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { loading: userLoading } = useUser();
+  const { GrabTopChannels } = ytService();
 
   const container = {
     hidden: { opacity: 0 },
@@ -47,88 +57,43 @@ export default function Channels() {
     show: { opacity: 1, y: 0 },
   };
 
-  // Mock channel data
-  const mockChannels: Channel[] = [
-    {
-      id: 1,
-      channelId: "UC-lHJZR3Gqxm24_Vd_AJ5Yw",
-      channelName: "PewDiePie",
-      channelThumbnailUrl:
-        "https://yt3.googleusercontent.com/ytc/AIf8zZTHFGiI6NJzttv6x3T99mH7fOF4mX5gE1B6YqbxFA=s176-c-k-c0x00ffffff-no-rj",
-      channelYoutubeLink: "https://www.youtube.com/@PewDiePie",
-      likeCount: 1500,
-      likedVideos: Array(150).fill("video"),
-    },
-    {
-      id: 2,
-      channelId: "UCX6OQ3DkcsbYNE6H8uQQuVA",
-      channelName: "MrBeast",
-      channelThumbnailUrl:
-        "https://yt3.googleusercontent.com/ytc/AIf8zZRdMBVPmqZ5KF5klPNGKW_reZQ6RSyXB5qDdidyeg=s176-c-k-c0x00ffffff-no-rj",
-      channelYoutubeLink: "https://www.youtube.com/@MrBeast",
-      likeCount: 2000,
-      likedVideos: Array(200).fill("video"),
-    },
-    {
-      id: 3,
-      channelId: "UC7_YxT-KID8kRbqZo7MyscQ",
-      channelName: "Markiplier",
-      channelThumbnailUrl:
-        "https://yt3.googleusercontent.com/ytc/AIf8zZTLtqQoL-YR-REjT9mZeqLPMBvaBB5LGtWCoxOi=s176-c-k-c0x00ffffff-no-rj",
-      channelYoutubeLink: "https://www.youtube.com/@markiplier",
-      likeCount: 1200,
-      likedVideos: Array(120).fill("video"),
-    },
-    {
-      id: 4,
-      channelId: "UCY1kMZp36IQSyNx_9h4mpCg",
-      channelName: "Mark Rober",
-      channelThumbnailUrl:
-        "https://yt3.googleusercontent.com/ytc/AIf8zZRCpJgqsPR5K8ZNK1S_v1ZHviYcrH_TqIE9nG4SOw=s176-c-k-c0x00ffffff-no-rj",
-      channelYoutubeLink: "https://www.youtube.com/@MarkRober",
-      likeCount: 800,
-      likedVideos: Array(80).fill("video"),
-    },
-    {
-      id: 5,
-      channelId: "UCBJycsmduvYEL83R_U4JriQ",
-      channelName: "MKBHD",
-      channelThumbnailUrl:
-        "https://yt3.googleusercontent.com/ytc/AIf8zZQjBpLgFBXC7YjEUDmtA6MoNvxd_sT36pYnjNsD=s176-c-k-c0x00ffffff-no-rj",
-      channelYoutubeLink: "https://www.youtube.com/@MKBHD",
-      likeCount: 1000,
-      likedVideos: Array(100).fill("video"),
-    },
-    {
-      id: 6,
-      channelId: "UCXuqSBlHAE6Xw-yeJA0Tunw",
-      channelName: "Linus Tech Tips",
-      channelThumbnailUrl:
-        "https://yt3.googleusercontent.com/ytc/AIf8zZS_PrACqLHDrpK1K6z5R6KuJi2YHGpcFucHW9wY=s176-c-k-c0x00ffffff-no-rj",
-      channelYoutubeLink: "https://www.youtube.com/@LinusTechTips",
-      likeCount: 900,
-      likedVideos: Array(90).fill("video"),
-    },
-  ];
-
   useEffect(() => {
-    // Only start loading channels after user data is loaded
-    if (!userLoading) {
-      setIsLoading(true);
+    const fetchChannels = async () => {
+      if (!userLoading) {
+        setIsLoading(true);
+        try {
+          const response = await GrabTopChannels();
 
-      const sorted = [...mockChannels].sort((a, b) => {
-        if (sortOrder === "highToLow") {
-          return b.likeCount - a.likeCount;
-        } else {
-          return a.likeCount - b.likeCount;
+          console.log(response.data);
+
+          if (!response.error && response.data) {
+            // Access the validatedResponse from the API response
+            const channels = response.data.validatedResponse;
+
+            // Make sure channels is an array before sorting
+            if (Array.isArray(channels)) {
+              const sorted = [...channels].sort((a, b) => {
+                if (sortOrder === "highToLow") {
+                  return b.likeCount - a.likeCount;
+                }
+                return a.likeCount - b.likeCount;
+              });
+              setSortedChannels(sorted);
+            } else {
+              console.error("Received invalid channel data:", channels);
+            }
+          } else {
+            console.error("Error fetching channels:", response);
+          }
+        } catch (error) {
+          console.error("Failed to fetch channels:", error);
+        } finally {
+          setIsLoading(false);
         }
-      });
+      }
+    };
 
-      setTimeout(() => {
-        setSortedChannels(sorted);
-        setIsLoading(false);
-      }, 1000);
-    }
+    fetchChannels();
   }, [sortOrder, userLoading]);
 
   if (userLoading) {
@@ -189,14 +154,16 @@ export default function Channels() {
             >
               {sortedChannels.map((channel) => (
                 <motion.div
-                  key={channel.id}
+                  key={channel.channelId}
                   variants={item}
                   className="bg-white rounded-lg p-5 shadow-md hover:-translate-y-1 transition-transform duration-300 flex flex-col items-center text-center relative"
                 >
                   <div className="w-20 h-20 rounded-full overflow-hidden mb-4">
-                    <img
+                    <Image
                       src={channel.channelThumbnailUrl}
                       alt={channel.channelName}
+                      width={36}
+                      height={36}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -204,7 +171,7 @@ export default function Channels() {
                     {channel.channelName}
                   </h3>
                   <p className="text-sm text-gray-600 mb-4">
-                    {channel.likedVideos.length} liked videos
+                    {channel.likeCount} liked videos
                   </p>
                   <div className="flex justify-between w-full mt-4">
                     <a
