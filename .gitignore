@@ -10,3 +10,13 @@ node_modules
 .env.local
 .env.production
 .env
+
+# build
+backend/dist
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store

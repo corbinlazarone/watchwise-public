@@ -1,12 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Loading from "../loading";
+
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "../../utils/user-context";
-import Loading from "../loading";
 import { useAuth } from "../../utils/hooks/use-auth";
 
 export default function Header() {
