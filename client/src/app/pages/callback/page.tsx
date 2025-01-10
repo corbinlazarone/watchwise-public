@@ -23,9 +23,8 @@ export default function Callback() {
         }
 
         if (session) {
-          // Successful login, redirect to dashboard
-          // router.push("/pages/dashboard")
-          router.push("/");
+          // Successful login, redirect to channels page
+          router.push("/pages/channels")
         } else {
           router.push("/pages/auth?error=No session found");
         }

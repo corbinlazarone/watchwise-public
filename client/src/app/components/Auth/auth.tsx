@@ -1,13 +1,38 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { useAuth } from "../../utils/hooks/use-auth";
 
 export default function Auth() {
   const { signInWithGoogle } = useAuth();
   const [loading, setIsLoading] = useState(false);
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -21,10 +46,21 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-white to-gray-100">
-      <div className="max-w-md w-full mx-4 p-8 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.16)]">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="flex justify-center items-center min-h-screen bg-gradient-to-br from-white to-gray-100"
+    >
+      <motion.div 
+        variants={itemVariants}
+        className="max-w-md w-full mx-4 p-8 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.16)]"
+      >
         {/* Logo */}
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] flex items-center justify-center">
+        <motion.div 
+          variants={itemVariants}
+          className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] flex items-center justify-center"
+        >
           <Image
             src="/logo.svg"
             alt="WatchWise Logo"
@@ -32,20 +68,24 @@ export default function Auth() {
             height={48}
             className="text-white"
           />
-        </div>
+        </motion.div>
 
         {/* Title and Subtitle */}
-        <div className="text-center mb-8">
+        <motion.div 
+          variants={itemVariants}
+          className="text-center mb-8"
+        >
           <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] bg-clip-text text-transparent">
             Welcome to WatchWise
           </h1>
           <p className="text-gray-600">
             Discover and track your favorite YouTube content
           </p>
-        </div>
+        </motion.div>
 
         {/* Sign in button */}
-        <button
+        <motion.button
+          variants={itemVariants}
           onClick={handleGoogleLogin}
           disabled={loading}
           className="w-full relative flex items-center justify-center gap-3 px-6 py-3 
@@ -89,10 +129,13 @@ export default function Auth() {
               <span className="font-medium">Continue with Google</span>
             </>
           )}
-        </button>
+        </motion.button>
 
         {/* Additional info */}
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <motion.p 
+          variants={itemVariants}
+          className="mt-6 text-center text-sm text-gray-500"
+        >
           By continuing, you agree to our{" "}
           <Link
             href="/pages/tos"
@@ -107,8 +150,8 @@ export default function Auth() {
           >
             Privacy Policy
           </Link>
-        </p>
-      </div>
-    </div>
+        </motion.p>
+      </motion.div>
+    </motion.div>
   );
 }

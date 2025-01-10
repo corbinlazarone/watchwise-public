@@ -1,2 +1,11 @@
 .aider*
-.env
+
+# node modules
+node_modules
+
+# next
+.next
+
+# envs
+.env.local
+.env.production

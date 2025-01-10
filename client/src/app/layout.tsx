@@ -1,5 +1,6 @@
 import "./globals.css";
 import React from "react";
+import { UserProvider } from "./utils/user-context";
 
 export default function RootLayout({
   children,
@@ -8,7 +9,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <UserProvider>{children}</UserProvider>
+      </body>
     </html>
   );
 }

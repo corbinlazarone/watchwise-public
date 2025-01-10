@@ -6,10 +6,15 @@ import { useRouter } from "next/navigation";
 import { BarChart2, ThumbsUp, Users, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { UserResult } from "../utils/types/user";
+import { supabase } from "../utils/supabsae-config";
+import { useAuth } from "../utils/hooks/use-auth";
 
 const Landing: React.FC = () => {
   const router = useRouter();
+  const { signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<UserResult | null>();
 
   const scrollToSection = (sectionId: string) => {
     setIsMenuOpen(false);
@@ -31,6 +36,39 @@ const Landing: React.FC = () => {
   };
 
   useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error("Error checking session:", error);
+          return;
+        }
+
+        if (session?.user) {
+          const userData: UserResult = {
+            id: session.user.id,
+            full_name: session.user.user_metadata.full_name,
+            email: session.user.email,
+            profile_url: session.user.user_metadata.avatar_url || session.user.user_metadata.picture,
+            providers: session.user.app_metadata.providers,
+            created_at: session.user.created_at,
+          };
+
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error("Failed to check session:", err);
+      }
+    };
+
+    checkSession();
+  }, [router]);
+
+  useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -40,6 +78,24 @@ const Landing: React.FC = () => {
       document.body.style.overflow = "unset";
     };
   }, [isMenuOpen]);
+
+  const fadeInFromTop = {
+    hidden: { y: -20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  const fadeInFromBottom = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
 
   // mobile menu animation variants
   const menuVariants = {
@@ -109,10 +165,24 @@ const Landing: React.FC = () => {
     router.push("/pages/auth");
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  }
+
   return (
     <>
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
+      <motion.header
+        initial="hidden"
+        animate="visible"
+        variants={fadeInFromTop}
+        className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100"
+      >
         <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo Section */}
           <div className="flex items-center gap-3">
@@ -130,29 +200,37 @@ const Landing: React.FC = () => {
             </span>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            <div className="flex items-center gap-6">
-              <button
-                onClick={() => scrollToSection("features")}
-                className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
-              >
-                Features
-              </button>
-              <button
-                onClick={() => scrollToSection("how-it-works")}
-                className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
-              >
-                How it Works
-              </button>
-            </div>
-            <button
-              onClick={handleLogin}
-              className="bg-[#ff5c00] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#ff7c2a] transition-all duration-300 hover:shadow-md"
-            >
-              Get Started
-            </button>
-          </nav>
+     {/* Desktop Navigation */}
+<nav className="hidden md:flex items-center gap-8">
+  <div className="flex items-center gap-6">
+    <button
+      onClick={() => scrollToSection("features")}
+      className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
+    >
+      Features
+    </button>
+    <button
+      onClick={() => scrollToSection("how-it-works")}
+      className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
+    >
+      How it Works
+    </button>
+    {user && (
+      <button
+        onClick={() => router.push('/pages/channels')}
+        className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
+      >
+        Channels
+      </button>
+    )}
+  </div>
+  <button
+    onClick={user ? handleSignOut : handleLogin}
+    className="bg-[#ff5c00] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#ff7c2a] transition-all duration-300 hover:shadow-md"
+  >
+    {user ? 'Sign Out' : 'Get Started'}
+  </button>
+</nav>
 
           {/* Mobile Menu Button */}
           <button
@@ -168,57 +246,72 @@ const Landing: React.FC = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial="closed"
-              animate="open"
-              exit="closed"
-              variants={menuVariants}
-              className="md:hidden border-t border-gray-100 bg-white overflow-hidden"
-            >
-              <motion.div
-                className="max-w-[1200px] mx-auto px-6 py-4 flex flex-col gap-4"
-                variants={{
-                  open: {
-                    transition: {
-                      staggerChildren: 0.1,
-                    },
-                  },
-                }}
-              >
-                <motion.button
-                  onClick={() => scrollToSection("features")}
-                  className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
-                  variants={itemVariants}
-                >
-                  Features
-                </motion.button>
-                <motion.button
-                  onClick={() => scrollToSection("how-it-works")}
-                  className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
-                  variants={itemVariants}
-                >
-                  How it Works
-                </motion.button>
-                <motion.button
-                  onClick={handleLogin}
-                  className="bg-[#ff5c00] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#ff7c2a] transition-all duration-300 w-full"
-                  variants={itemVariants}
-                >
-                  Get Started
-                </motion.button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
+{/* Mobile Navigation */}
+<AnimatePresence>
+  {isMenuOpen && (
+    <motion.div
+      initial="closed"
+      animate="open"
+      exit="closed"
+      variants={menuVariants}
+      className="md:hidden border-t border-gray-100 bg-white overflow-hidden"
+    >
+      <motion.div
+        className="max-w-[1200px] mx-auto px-6 py-4 flex flex-col gap-4"
+        variants={{
+          open: {
+            transition: {
+              staggerChildren: 0.1,
+            },
+          },
+        }}
+      >
+        <motion.button
+          onClick={() => scrollToSection("features")}
+          className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
+          variants={itemVariants}
+        >
+          Features
+        </motion.button>
+        <motion.button
+          onClick={() => scrollToSection("how-it-works")}
+          className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
+          variants={itemVariants}
+        >
+          How it Works
+        </motion.button>
+        {user && (
+          <motion.button
+            onClick={() => router.push('/pages/channels')}
+            className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
+            variants={itemVariants}
+          >
+            Channels
+          </motion.button>
+        )}
+        <motion.button
+          onClick={user ? handleSignOut : handleLogin}
+          className="bg-[#ff5c00] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#ff7c2a] transition-all duration-300 w-full"
+          variants={itemVariants}
+        >
+          {user ? 'Sign Out' : 'Get Started'}
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
+      </motion.header>
 
       {/* Main Content */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-16 sm:mt-20">
         {/* Hero Section */}
-        <section className="flex flex-col md:flex-row items-center justify-between py-8 sm:py-16 gap-8 sm:gap-12">
+        <motion.section
+          initial="hidden"
+          animate="visible"
+          variants={fadeInFromBottom}
+          transition={{ delay: 0.2 }}
+          className="flex flex-col md:flex-row items-center justify-between py-8 sm:py-16 gap-8 sm:gap-12"
+        >
           <div className="md:w-1/2 text-center md:text-left">
             <h1 className="text-4xl sm:text-5xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] text-transparent bg-clip-text font-bold leading-tight">
               Discover Your True YouTube Favorites
@@ -271,10 +364,17 @@ const Landing: React.FC = () => {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Features Section */}
-        <section id="features" className="py-12 sm:py-16 scroll-mt-20">
+        <motion.section
+          initial="hidden"
+          animate="visible"
+          variants={fadeInFromBottom}
+          transition={{ delay: 0.4 }}
+          id="features"
+          className="py-12 sm:py-16 scroll-mt-20"
+        >
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12 bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] text-transparent bg-clip-text px-4">
             Powerful Features for YouTube Enthusiasts
           </h2>
@@ -296,10 +396,14 @@ const Landing: React.FC = () => {
               </div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
         {/* How It Works Section */}
-        <section
+        <motion.section
+          initial="hidden"
+          animate="visible"
+          variants={fadeInFromBottom}
+          transition={{ delay: 0.6 }}
           id="how-it-works"
           className="py-12 sm:py-16 bg-gray-50 rounded-2xl px-4 sm:px-8 scroll-mt-20"
         >
@@ -323,10 +427,16 @@ const Landing: React.FC = () => {
               </div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
         {/* CTA Section */}
-        <section className="py-12 sm:py-16 px-4 sm:px-0">
+        <motion.section
+          initial="hidden"
+          animate="visible"
+          variants={fadeInFromBottom}
+          transition={{ delay: 0.8 }}
+          className="py-12 sm:py-16 px-4 sm:px-0"
+        >
           <div className="bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] rounded-2xl p-6 sm:p-12 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">
               Ready to Discover Your YouTube Journey?
@@ -355,7 +465,45 @@ const Landing: React.FC = () => {
               </svg>
             </button>
           </div>
-        </section>
+        </motion.section>
+        {/* Footer */}
+        <motion.footer
+          initial="hidden"
+          animate="visible"
+          variants={fadeInFromBottom}
+          transition={{ delay: 1 }}
+          className="bg-gray-50 border-t border-gray-100"
+        >
+          <div className="max-w-[1200px] mx-auto px-6 py-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600 text-sm">
+                  © {new Date().getFullYear()} WatchWise. All rights reserved.
+                </span>
+              </div>
+              <div className="flex items-center gap-6">
+                <a
+                  href="/terms"
+                  className="text-sm text-gray-600 hover:text-[#ff5c00] transition-colors"
+                >
+                  Terms of Service
+                </a>
+                <a
+                  href="/privacy"
+                  className="text-sm text-gray-600 hover:text-[#ff5c00] transition-colors"
+                >
+                  Privacy Policy
+                </a>
+                <a
+                  href="/contact"
+                  className="text-sm text-gray-600 hover:text-[#ff5c00] transition-colors"
+                >
+                  Contact
+                </a>
+              </div>
+            </div>
+          </div>
+        </motion.footer>
       </div>
     </>
   );
