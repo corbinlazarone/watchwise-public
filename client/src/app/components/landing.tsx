@@ -126,21 +126,22 @@ const Landing: React.FC = () => {
   // feature item list
   const features = [
     {
+      icon: <Users size={32} className="text-[#ff5c00]" />,
+      title: "Channel Insights",
+      desc: "See all your subscribed YouTube channels and track how many videos you've liked from each one."
+    },
+    {
       icon: <BarChart2 size={32} className="text-[#ff5c00]" />,
-      title: "Smart Channel Ranking",
-      desc: "Advanced algorithms analyze your viewing patterns to rank channels based on your genuine engagement.",
+      title: "Engagement Ranking",
+      desc: "Channels are ranked based on the number of videos you've liked, showing which channels truly resonate with you."
     },
     {
       icon: <ThumbsUp size={32} className="text-[#ff5c00]" />,
-      title: "Like-Based Analysis",
-      desc: "Understand your content preferences through comprehensive analysis of your liked videos.",
-    },
-    {
-      icon: <Users size={32} className="text-[#ff5c00]" />,
-      title: "Subscription Insights",
-      desc: "Get detailed insights about your subscription habits and channel interactions.",
-    },
+      title: "Liked Videos Library",
+      desc: "Access your complete library of liked videos in one place, sorted by most recent or oldest first."
+    }
   ];
+  
 
   // how it work list
   const howItWorks = [
@@ -483,19 +484,19 @@ const Landing: React.FC = () => {
               </div>
               <div className="flex items-center gap-6">
                 <a
-                  href="/terms"
+                  href="/pages/terms"
                   className="text-sm text-gray-600 hover:text-[#ff5c00] transition-colors"
                 >
                   Terms of Service
                 </a>
                 <a
-                  href="/privacy"
+                  href="/pages/privacy"
                   className="text-sm text-gray-600 hover:text-[#ff5c00] transition-colors"
                 >
                   Privacy Policy
                 </a>
                 <a
-                  href="/contact"
+                  href="/pages/contact"
                   className="text-sm text-gray-600 hover:text-[#ff5c00] transition-colors"
                 >
                   Contact

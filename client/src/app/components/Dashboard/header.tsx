@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, Menu, Settings, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "../../utils/user-context";
 import Loading from "../loading";
@@ -16,11 +16,6 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  if (loading) {
-    return <Loading />;
-  }
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -33,10 +28,9 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const userProfile = {
-    name: "John Doe",
-    profilePic: "https://images.unsplash.com/photo-1706463629335-d92264bbfd6f",
-  };
+  if (loading) {
+    return <Loading />;
+  }
 
   const navItems = [
     {
@@ -49,7 +43,6 @@ export default function Header() {
     },
   ];
 
-  // Animation variants
   const menuVariants = {
     closed: {
       opacity: 0,
@@ -117,51 +110,71 @@ export default function Header() {
           </div>
         </nav>
 
-        {/* Profile Dropdown */}
-        <div className="relative profile-dropdown">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-3 px-4 py-2 rounded-full hover:bg-gray-50 transition-colors cursor-pointer"
-          >
-            <img
-              src={user.profile_url}
-              alt={user.full_name}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <span className="font-medium text-gray-700">{user.full_name}</span>
-          </button>
-          <AnimatePresence>
-            {isDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="absolute right-0 mt-2 w-48 py-2 bg-white rounded-xl shadow-lg border border-gray-200"
+        {/* Profile Section with Buy Me Coffee Button */}
+        <div className="flex items-center gap-4">
+          {/* Profile Section - Different behavior for mobile and desktop */}
+          <div className="relative profile-dropdown">
+            {/* Desktop Profile with Dropdown */}
+            <div className="hidden md:block">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-3 px-4 py-2 rounded-full hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                <button
-                  onClick={handleSignOut}
-                  className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                >
-                  <LogOut size={16} className="mr-2" />
-                  Sign out
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                <img
+                  src={user.profile_url}
+                  alt={user.full_name}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <span className="font-medium text-gray-700">
+                  {user.full_name}
+                </span>
+              </button>
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-2 w-48 py-2 bg-white rounded-xl shadow-lg border border-gray-200"
+                  >
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Sign out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? (
-            <X className="w-5 h-5 text-gray-600" />
-          ) : (
-            <Menu className="w-5 h-5 text-gray-600" />
-          )}
-        </button>
+            {/* Mobile Profile - Direct Sign Out */}
+            <button
+              onClick={handleSignOut}
+              className="md:hidden flex items-center gap-3 px-4 py-2 rounded-full hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              <img
+                src={user.profile_url}
+                alt={user.full_name}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            </button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? (
+              <X className="w-5 h-5 text-gray-600" />
+            ) : (
+              <Menu className="w-5 h-5 text-gray-600" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
@@ -184,21 +197,6 @@ export default function Header() {
                 },
               }}
             >
-              {/* Mobile User Profile */}
-              <motion.div
-                className="flex items-center gap-3 px-4 py-2"
-                variants={itemVariants}
-              >
-                <img
-                  src={user.profile_url}
-                  alt={user.full_name}
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-                <span className="font-medium text-gray-700">
-                  {user.full_name}
-                </span>
-              </motion.div>
-
               {/* Mobile Nav Items */}
               {navItems.map((item) => (
                 <motion.button

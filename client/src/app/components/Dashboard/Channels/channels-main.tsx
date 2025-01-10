@@ -146,7 +146,7 @@ export default function Channels() {
             transition={{ duration: 0.5 }}
             className="text-4xl font-bold text-center mb-5 bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] text-transparent bg-clip-text"
           >
-            Your Channels
+            Your Subscribed Channels
           </motion.h1>
 
           <div className="flex flex-wrap justify-center gap-2.5 mb-5">
