@@ -1,6 +1,6 @@
 import { Session } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { supabase } from "../supabsae-config";
+import { supabase } from "../supabase-config";
 import { useRouter } from "next/navigation";
 
 interface AuthState {

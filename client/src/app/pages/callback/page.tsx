@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { supabase } from "../../utils/supabsae-config";
+import { supabase } from "../../utils/supabase-config";
 import Loading from "../../components/loading";
 
 export default function Callback() {

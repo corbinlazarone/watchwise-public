@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../supabsae-config";
+import { supabase } from "../supabase-config";
 import { UserResult } from "../types/user";
 
 export const userFunctions = () => {

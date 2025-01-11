@@ -180,9 +180,11 @@ export default function Videos({
                     <Image
                       src={video.videoThumbnailUrl}
                       alt={video.videoTitle}
-                      height={240}
-                      width={240}
+                      width={640}
+                      height={360}
                       className="w-full h-full object-cover"
+                      quality={100} 
+                      priority={true}
                     />
                   </div>
                   <h3 className="text-lg font-bold mb-2 line-clamp-2">

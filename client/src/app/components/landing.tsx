@@ -7,14 +7,18 @@ import { BarChart2, ThumbsUp, Users, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { UserResult } from "../utils/types/user";
-import { supabase } from "../utils/supabsae-config";
+import { supabase } from "../utils/supabase-config";
 import { useAuth } from "../utils/hooks/use-auth";
+import { ALERT_TYPE, Alert } from "../utils/types/alert";
+import PopupAlert from "./Popup/popupalert";
+import Contact from "./Contact/contact";
 
 const Landing: React.FC = () => {
   const router = useRouter();
   const { signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<UserResult | null>();
+  const [alert, setAlert] = useState<Alert | null>();
 
   const scrollToSection = (sectionId: string) => {
     setIsMenuOpen(false);
@@ -53,7 +57,9 @@ const Landing: React.FC = () => {
             id: session.user.id,
             full_name: session.user.user_metadata.full_name,
             email: session.user.email,
-            profile_url: session.user.user_metadata.avatar_url || session.user.user_metadata.picture,
+            profile_url:
+              session.user.user_metadata.avatar_url ||
+              session.user.user_metadata.picture,
             providers: session.user.app_metadata.providers,
             created_at: session.user.created_at,
           };
@@ -128,20 +134,19 @@ const Landing: React.FC = () => {
     {
       icon: <Users size={32} className="text-[#ff5c00]" />,
       title: "Channel Insights",
-      desc: "See all your subscribed YouTube channels and track how many videos you've liked from each one."
+      desc: "See all your subscribed YouTube channels and track how many videos you've liked from each one.",
     },
     {
       icon: <BarChart2 size={32} className="text-[#ff5c00]" />,
       title: "Engagement Ranking",
-      desc: "Channels are ranked based on the number of videos you've liked, showing which channels truly resonate with you."
+      desc: "Channels are ranked based on the number of videos you've liked, showing which channels truly resonate with you.",
     },
     {
       icon: <ThumbsUp size={32} className="text-[#ff5c00]" />,
       title: "Liked Videos Library",
-      desc: "Access your complete library of liked videos in one place, sorted by most recent or oldest first."
-    }
+      desc: "Access your complete library of liked videos in one place, sorted by most recent or oldest first.",
+    },
   ];
-  
 
   // how it work list
   const howItWorks = [
@@ -173,11 +178,24 @@ const Landing: React.FC = () => {
     } catch (error) {
       console.error("Error signing out: ", error);
     }
-  }
+  };
+
+  const handleAlert = (message: string, type: ALERT_TYPE) => {
+    setAlert({ message, type });
+  };
 
   return (
     <>
-      {/* Header */}
+      {/* Popup Alert - Higher z-index than header */}
+      <div className="fixed top-4 right-4 z-[100]">
+        {alert && (
+          <PopupAlert
+            message={alert.message}
+            type={alert.type}
+            onClose={() => setAlert(null)}
+          />
+        )}
+      </div>
       <motion.header
         initial="hidden"
         animate="visible"
@@ -201,37 +219,43 @@ const Landing: React.FC = () => {
             </span>
           </div>
 
-     {/* Desktop Navigation */}
-<nav className="hidden md:flex items-center gap-8">
-  <div className="flex items-center gap-6">
-    <button
-      onClick={() => scrollToSection("features")}
-      className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
-    >
-      Features
-    </button>
-    <button
-      onClick={() => scrollToSection("how-it-works")}
-      className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
-    >
-      How it Works
-    </button>
-    {user && (
-      <button
-        onClick={() => router.push('/pages/channels')}
-        className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
-      >
-        Channels
-      </button>
-    )}
-  </div>
-  <button
-    onClick={user ? handleSignOut : handleLogin}
-    className="bg-[#ff5c00] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#ff7c2a] transition-all duration-300 hover:shadow-md"
-  >
-    {user ? 'Sign Out' : 'Get Started'}
-  </button>
-</nav>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-8">
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => scrollToSection("features")}
+                className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
+              >
+                Features
+              </button>
+              <button
+                onClick={() => scrollToSection("how-it-works")}
+                className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
+              >
+                How it Works
+              </button>
+              <button
+                onClick={() => scrollToSection("contact")}
+                className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
+              >
+                Contact
+              </button>
+              {user && (
+                <button
+                  onClick={() => router.push("/pages/channels")}
+                  className="text-gray-600 hover:text-[#ff5c00] transition-colors text-sm font-medium cursor-pointer"
+                >
+                  Channels
+                </button>
+              )}
+            </div>
+            <button
+              onClick={user ? handleSignOut : handleLogin}
+              className="bg-[#ff5c00] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#ff7c2a] transition-all duration-300 hover:shadow-md"
+            >
+              {user ? "Sign Out" : "Get Started"}
+            </button>
+          </nav>
 
           {/* Mobile Menu Button */}
           <button
@@ -247,60 +271,67 @@ const Landing: React.FC = () => {
           </button>
         </div>
 
-{/* Mobile Navigation */}
-<AnimatePresence>
-  {isMenuOpen && (
-    <motion.div
-      initial="closed"
-      animate="open"
-      exit="closed"
-      variants={menuVariants}
-      className="md:hidden border-t border-gray-100 bg-white overflow-hidden"
-    >
-      <motion.div
-        className="max-w-[1200px] mx-auto px-6 py-4 flex flex-col gap-4"
-        variants={{
-          open: {
-            transition: {
-              staggerChildren: 0.1,
-            },
-          },
-        }}
-      >
-        <motion.button
-          onClick={() => scrollToSection("features")}
-          className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
-          variants={itemVariants}
-        >
-          Features
-        </motion.button>
-        <motion.button
-          onClick={() => scrollToSection("how-it-works")}
-          className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
-          variants={itemVariants}
-        >
-          How it Works
-        </motion.button>
-        {user && (
-          <motion.button
-            onClick={() => router.push('/pages/channels')}
-            className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
-            variants={itemVariants}
-          >
-            Channels
-          </motion.button>
-        )}
-        <motion.button
-          onClick={user ? handleSignOut : handleLogin}
-          className="bg-[#ff5c00] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#ff7c2a] transition-all duration-300 w-full"
-          variants={itemVariants}
-        >
-          {user ? 'Sign Out' : 'Get Started'}
-        </motion.button>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
+        {/* Mobile Navigation */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={menuVariants}
+              className="md:hidden border-t border-gray-100 bg-white overflow-hidden"
+            >
+              <motion.div
+                className="max-w-[1200px] mx-auto px-6 py-4 flex flex-col gap-4"
+                variants={{
+                  open: {
+                    transition: {
+                      staggerChildren: 0.1,
+                    },
+                  },
+                }}
+              >
+                <motion.button
+                  onClick={() => scrollToSection("features")}
+                  className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
+                  variants={itemVariants}
+                >
+                  Features
+                </motion.button>
+                <motion.button
+                  onClick={() => scrollToSection("how-it-works")}
+                  className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
+                  variants={itemVariants}
+                >
+                  How it Works
+                </motion.button>
+                <motion.button
+                  onClick={() => scrollToSection("contact")}
+                  className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
+                  variants={itemVariants}
+                >
+                  Contact
+                </motion.button>
+                {user && (
+                  <motion.button
+                    onClick={() => router.push("/pages/channels")}
+                    className="text-left text-gray-600 hover:text-[#ff5c00] transition-colors py-2 text-sm font-medium"
+                    variants={itemVariants}
+                  >
+                    Channels
+                  </motion.button>
+                )}
+                <motion.button
+                  onClick={user ? handleSignOut : handleLogin}
+                  className="bg-[#ff5c00] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#ff7c2a] transition-all duration-300 w-full"
+                  variants={itemVariants}
+                >
+                  {user ? "Sign Out" : "Get Started"}
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
 
       {/* Main Content */}
@@ -352,15 +383,98 @@ const Landing: React.FC = () => {
           </div>
           <div className="md:w-1/2 w-full px-4 sm:px-0">
             <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] rounded-lg blur opacity-30"></div>
-              <div className="relative bg-white rounded-lg shadow-xl p-4 sm:p-6">
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  {[1, 2, 3, 4].map((item) => (
-                    <div
-                      key={item}
-                      className="h-20 sm:h-24 bg-gray-100 rounded-lg animate-pulse"
-                    ></div>
-                  ))}
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] rounded-2xl blur opacity-30"></div>
+              <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden">
+                {/* Mock Browser Window */}
+                <div className="border-b border-gray-100">
+                  <div className="px-4 py-3 flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                    </div>
+                    <div className="flex-1 bg-gray-100 rounded-full h-6 flex items-center px-4">
+                      <span className="text-xs text-gray-400">
+                        watchwise.com/channels
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Channel Dashboard Content */}
+                <div className="p-4">
+                  {/* Sort Buttons */}
+                  <div className="flex justify-center gap-2 mb-4">
+                    <div className="px-4 py-2 rounded-full bg-[#ff5c00] text-white text-sm">
+                      High to Low
+                    </div>
+                    <div className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm">
+                      Low to High
+                    </div>
+                  </div>
+
+                  {/* Channel Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      {
+                        name: "Tech Channel",
+                        likes: 45,
+                        img: "/demo-channel-1.jpg",
+                      },
+                      {
+                        name: "Gaming Channel",
+                        likes: 32,
+                        img: "/demo-channel-2.jpg",
+                      },
+                    ].map((channel, index) => (
+                      <div
+                        key={index}
+                        className="bg-white rounded-lg p-3 shadow-md hover:-translate-y-0.5 transition-transform duration-300 flex flex-col items-center text-center"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center mb-2">
+                          <Users className="w-6 h-6 text-[#ff5c00]" />
+                        </div>
+                        <h3 className="text-sm font-bold mb-1 line-clamp-1">
+                          {channel.name}
+                        </h3>
+                        <p className="text-xs text-gray-600 mb-2">
+                          {channel.likes} liked videos
+                        </p>
+                        <div className="flex flex-col w-full gap-1.5">
+                          <button className="w-full px-2 py-1.5 bg-gray-100 rounded-full text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors">
+                            Visit Channel
+                          </button>
+                          <button className="w-full px-2 py-1.5 bg-[#ff5c00] text-white rounded-full text-xs font-semibold hover:bg-[#ff7c30] transition-colors">
+                            View Liked Videos
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Bottom Stats */}
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 p-3 rounded-xl">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <ThumbsUp className="w-4 h-4 text-[#ff5c00]" />
+                        <span className="text-sm font-medium text-gray-700">
+                          Total Likes
+                        </span>
+                      </div>
+                      <div className="text-2xl font-bold text-[#ff5c00]">
+                        77
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 p-3 rounded-xl">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <Users className="w-4 h-4 text-[#ff5c00]" />
+                        <span className="text-sm font-medium text-gray-700">
+                          Channels
+                        </span>
+                      </div>
+                      <div className="text-2xl font-bold text-[#ff5c00]">2</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -467,6 +581,21 @@ const Landing: React.FC = () => {
             </button>
           </div>
         </motion.section>
+
+        {/* Contact */}
+        <motion.section
+          initial="hidden"
+          animate="visible"
+          variants={fadeInFromBottom}
+          transition={{ delay: 0.9 }}
+          id="contact"
+          className="py-12 sm:py-16 scroll-mt-20"
+        >
+          <div className="max-w-3xl mx-auto">
+            <Contact onAlert={handleAlert} />
+          </div>
+        </motion.section>
+
         {/* Footer */}
         <motion.footer
           initial="hidden"
@@ -484,7 +613,7 @@ const Landing: React.FC = () => {
               </div>
               <div className="flex items-center gap-6">
                 <a
-                  href="/pages/terms"
+                  href="/pages/tos"
                   className="text-sm text-gray-600 hover:text-[#ff5c00] transition-colors"
                 >
                   Terms of Service
@@ -494,12 +623,6 @@ const Landing: React.FC = () => {
                   className="text-sm text-gray-600 hover:text-[#ff5c00] transition-colors"
                 >
                   Privacy Policy
-                </a>
-                <a
-                  href="/pages/contact"
-                  className="text-sm text-gray-600 hover:text-[#ff5c00] transition-colors"
-                >
-                  Contact
                 </a>
               </div>
             </div>

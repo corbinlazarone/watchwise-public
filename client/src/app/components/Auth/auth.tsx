@@ -79,7 +79,7 @@ export default function Auth() {
             Welcome to WatchWise
           </h1>
           <p className="text-gray-600">
-            Discover and track your favorite YouTube content
+            Discover your favorite YouTube content
           </p>
         </motion.div>
 

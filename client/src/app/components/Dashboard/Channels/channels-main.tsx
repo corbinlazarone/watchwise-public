@@ -183,11 +183,14 @@ export default function Channels() {
                     <Image
                       src={channel.channelThumbnailUrl}
                       alt={channel.channelName}
-                      width={36}
-                      height={36}
+                      width={160}
+                      height={160} 
                       className="w-full h-full object-cover"
+                      quality={100} 
+                      priority={true}
                     />
                   </div>
+
                   <h3 className="text-lg font-bold mb-2.5">
                     {channel.channelName}
                   </h3>
