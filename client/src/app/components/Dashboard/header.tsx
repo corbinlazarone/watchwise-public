@@ -39,7 +39,7 @@ export default function Header() {
       path: "/pages/channels",
     },
     {
-      name: "Videos",
+      name: "Liked Videos",
       path: "/pages/videos",
     },
   ];

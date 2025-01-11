@@ -78,9 +78,15 @@ export default function Videos({
 
           const sorted = [...videos].sort((a, b) => {
             if (sortOrder === "mostRecent") {
-              return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+              return (
+                new Date(b.publishedAt).getTime() -
+                new Date(a.publishedAt).getTime()
+              );
             }
-            return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
+            return (
+              new Date(a.publishedAt).getTime() -
+              new Date(b.publishedAt).getTime()
+            );
           });
 
           setSortedVideos(sorted);
@@ -142,6 +148,21 @@ export default function Videos({
                 <VideoSkeleton key={index} />
               ))}
             </div>
+          ) : sortedVideos.length === 0 ? (
+            // No videos message
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-10"
+            >
+              <h2 className="text-2xl font-semibold text-gray-700 mb-3">
+                No Videos Found
+              </h2>
+              <p className="text-gray-500">
+                We couldn't find any liked videos. Try liking some YouTube
+                videos and check back here!
+              </p>
+            </motion.div>
           ) : (
             <motion.div
               variants={container}
@@ -189,7 +210,8 @@ export default function Videos({
             </motion.div>
           )}
         </div>
-      </main>s
+      </main>
+      s
     </>
   );
 }

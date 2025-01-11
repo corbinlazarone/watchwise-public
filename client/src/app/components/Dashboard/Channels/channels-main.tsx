@@ -150,6 +150,21 @@ export default function Channels() {
                 <ChannelSkeleton key={index} />
               ))}
             </div>
+          ) : sortedChannels.length === 0 ? (
+            // No channels message
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-10"
+            >
+              <h2 className="text-2xl font-semibold text-gray-700 mb-3">
+                No Channels Found
+              </h2>
+              <p className="text-gray-500">
+                We couldn't find any subscribed channels. Try subscribing to
+                some YouTube channels and check back here!
+              </p>
+            </motion.div>
           ) : (
             // Actual content with animation
             <motion.div
