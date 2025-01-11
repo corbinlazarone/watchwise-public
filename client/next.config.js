@@ -1,7 +1,6 @@
 module.exports = {
-    images: {
-      domains: ['yt3.ggpht.com'] // youtube thumbnail url 
-    }
-  }
-  
-  
+  images: {
+    domains: ["yt3.ggpht.com", "i.ytimg.com"],
+  },
+  output: "standalone",
+};

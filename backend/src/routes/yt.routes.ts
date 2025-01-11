@@ -7,5 +7,6 @@ const youtubeService = new YoutubeSerivce();
 const youtubeController = new YoutubeController(youtubeService);
 
 router.get("/channels", youtubeController.GrabTopChannels);
+router.get("/channels/:channelid/videos", youtubeController.GrabChannelLikedVideos);
 
 export default router;

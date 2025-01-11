@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useUser } from "../../../utils/user-context";
 import Loading from "../../loading";
 import { ytService } from "../../../utils/services/yt.service";
+import { useRouter } from "next/navigation";
 
 interface Channel {
   channelId: string;
@@ -34,6 +35,7 @@ const ChannelSkeleton = () => (
 );
 
 export default function Channels() {
+  const router = useRouter();
   const [sortOrder, setSortOrder] = useState<"highToLow" | "lowToHigh">(
     "highToLow"
   );
@@ -99,6 +101,10 @@ export default function Channels() {
   if (userLoading) {
     return <Loading />;
   }
+
+  const handleViewLikedVideos = (channel: Channel) => {
+    router.push(`/pages/channels/${channel.channelId}/videos`);
+  };
 
   return (
     <>
@@ -173,15 +179,21 @@ export default function Channels() {
                   <p className="text-sm text-gray-600 mb-4">
                     {channel.likeCount} liked videos
                   </p>
-                  <div className="flex justify-between w-full mt-4">
+                  <div className="flex flex-col w-full gap-2 mt-4">
                     <a
                       href={channel.channelYoutubeLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 mx-1 px-3 py-2 bg-gray-100 rounded-full text-sm font-semibold text-gray-700 hover:bg-[#ff5c00] hover:text-white transition-colors"
+                      className="flex-1 px-3 py-2 bg-gray-100 rounded-full text-sm font-semibold text-gray-700 hover:bg-[#ff5c00] hover:text-white transition-colors"
                     >
                       Visit Channel
                     </a>
+                    <button
+                      onClick={() => handleViewLikedVideos(channel)}
+                      className="flex-1 px-3 py-2 bg-[#ff5c00] text-white rounded-full text-sm font-semibold hover:bg-[#ff7c30] transition-colors"
+                    >
+                      View Liked Videos
+                    </button>
                   </div>
                 </motion.div>
               ))}

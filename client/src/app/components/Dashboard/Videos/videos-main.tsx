@@ -1,12 +1,13 @@
 "use client";
-import { useState, useEffect } from 'react';
-import Header from '../header';
-import { motion } from 'framer-motion';
-import { useUser } from '../../../utils/user-context';
-import Loading from '../../loading';
+import { useState, useEffect } from "react";
+import Header from "../header";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { useUser } from "../../../utils/user-context";
+import Loading from "../../loading";
+import { ytService } from "../../../utils/services/yt.service";
 
 interface Video {
-  id: string;
   videoId: string;
   videoTitle: string;
   videoThumbnailUrl: string;
@@ -14,6 +15,12 @@ interface Video {
   channelId: string;
   channelName: string;
   publishedAt: string;
+}
+
+interface VideosProps {
+  title?: string;
+  initialVideos?: Video[];
+  channelView?: boolean;
 }
 
 const VideoSkeleton = () => (
@@ -26,11 +33,18 @@ const VideoSkeleton = () => (
   </div>
 );
 
-export default function Videos() {
-  const [sortOrder, setSortOrder] = useState<"mostRecent" | "oldest">("mostRecent");
+export default function Videos({
+  title = "Your Liked Videos",
+  initialVideos,
+  channelView = false,
+}: VideosProps) {
+  const [sortOrder, setSortOrder] = useState<"mostRecent" | "oldest">(
+    "mostRecent"
+  );
   const [sortedVideos, setSortedVideos] = useState<Video[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { loading: userLoading } = useUser();
+  const { GrabLikedVideos } = ytService();
 
   const container = {
     hidden: { opacity: 0 },
@@ -47,39 +61,40 @@ export default function Videos() {
     show: { opacity: 1, y: 0 },
   };
 
-  // Mock video data
-  const mockVideos: Video[] = [
-    {
-      id: "1",
-      videoId: "video1",
-      videoTitle: "I Spent 24 Hours Straight In VR Minecraft",
-      videoThumbnailUrl: "https://i.ytimg.com/vi/sample1/maxresdefault.jpg",
-      videoLink: "https://youtube.com/watch?v=sample1",
-      channelId: "UC-lHJZR3Gqxm24_Vd_AJ5Yw",
-      channelName: "PewDiePie",
-      publishedAt: "2024-02-10T15:00:00Z"
-    },
-    // Add more mock videos as needed
-  ];
-
   useEffect(() => {
-    if (!userLoading) {
-      setIsLoading(true);
+    const fetchVideos = async () => {
+      if (!userLoading) {
+        setIsLoading(true);
+        try {
+          let videos;
+          if (initialVideos) {
+            // If videos are passed as props (channel view), use those
+            videos = initialVideos;
+            console.log(initialVideos);
+          } else {
+            // Otherwise fetch all liked videos
+            const response = await GrabLikedVideos("test");
+            videos = response.data?.validatedResponse || [];
+          }
 
-      const sorted = [...mockVideos].sort((a, b) => {
-        if (sortOrder === "mostRecent") {
-          return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-        } else {
-          return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
+          const sorted = [...videos].sort((a, b) => {
+            if (sortOrder === "mostRecent") {
+              return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+            }
+            return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
+          });
+
+          setSortedVideos(sorted);
+        } catch (error) {
+          console.error("Failed to fetch videos:", error);
+        } finally {
+          setIsLoading(false);
         }
-      });
+      }
+    };
 
-      setTimeout(() => {
-        setSortedVideos(sorted);
-        setIsLoading(false);
-      }, 1000);
-    }
-  }, [sortOrder, userLoading]);
+    fetchVideos();
+  }, [sortOrder, userLoading, initialVideos]);
 
   if (userLoading) {
     return <Loading />;
@@ -96,7 +111,7 @@ export default function Videos() {
             transition={{ duration: 0.5 }}
             className="text-4xl font-bold text-center mb-5 bg-gradient-to-r from-[#ff0c0c] to-[#ff5c00] text-transparent bg-clip-text"
           >
-            Your Liked Videos
+            {title}
           </motion.h1>
 
           <div className="flex flex-wrap justify-center gap-2.5 mb-5">
@@ -137,23 +152,28 @@ export default function Videos() {
             >
               {sortedVideos.map((video) => (
                 <motion.div
-                  key={video.id}
+                  key={video.videoId}
                   variants={item}
                   className="bg-white rounded-lg p-5 shadow-md hover:-translate-y-1 transition-transform duration-300 flex flex-col"
                 >
                   <div className="aspect-video w-full mb-4 rounded-lg overflow-hidden">
-                    <img
+                    <Image
                       src={video.videoThumbnailUrl}
                       alt={video.videoTitle}
+                      height={240}
+                      width={240}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <h3 className="text-lg font-bold mb-2 line-clamp-2">
                     {video.videoTitle}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-2">{video.channelName}</p>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {video.channelName}
+                  </p>
                   <p className="text-xs text-gray-500 mb-4">
-                    Posted on: {new Date(video.publishedAt).toLocaleDateString()}
+                    Posted on:{" "}
+                    {new Date(video.publishedAt).toLocaleDateString()}
                   </p>
                   <div className="mt-auto">
                     <a
@@ -170,7 +190,7 @@ export default function Videos() {
             </motion.div>
           )}
         </div>
-      </main>
+      </main>s
     </>
   );
 }
