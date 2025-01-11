@@ -27,6 +27,7 @@ export const ytService = () => {
 
       // Make API call with valid session
       try {
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/yt/channels`,
           {
@@ -38,6 +39,7 @@ export const ytService = () => {
             },
           }
         );
+
 
         if (!response.ok) {
           if (response.status === 401) {
@@ -134,7 +136,7 @@ export const ytService = () => {
     }
   };
 
-  const GrabLikedVideos = async (channelId: string | string[]) => {
+  const GrabLikedVideos = async () => {
     try {
         // Get current session
         let {
@@ -160,7 +162,7 @@ export const ytService = () => {
         // Make API call with valid session
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/yt/channels/${channelId}/videos`,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/yt/videos`,
             {
               method: "GET",
               headers: {

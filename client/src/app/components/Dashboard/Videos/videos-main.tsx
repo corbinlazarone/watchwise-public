@@ -70,11 +70,10 @@ export default function Videos({
           if (initialVideos) {
             // If videos are passed as props (channel view), use those
             videos = initialVideos;
-            console.log(initialVideos);
           } else {
             // Otherwise fetch all liked videos
-            const response = await GrabLikedVideos("test");
-            videos = response.data?.validatedResponse || [];
+            const response = await GrabLikedVideos();
+            videos = response.data?.validatedResponse;
           }
 
           const sorted = [...videos].sort((a, b) => {
