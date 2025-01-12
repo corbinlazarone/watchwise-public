@@ -65,9 +65,7 @@ export default function Channels() {
         setIsLoading(true);
         try {
           const response = await GrabTopChannels();
-
-          console.log(response.data);
-
+          
           if (!response.error && response.data) {
             // Access the validatedResponse from the API response
             const channels = response.data.validatedResponse;
