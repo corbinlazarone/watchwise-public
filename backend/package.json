@@ -28,7 +28,7 @@
   "scripts": {
     "start": "NODE_ENV=production node dist/index.js",
     "dev": "NODE_ENV=development ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "npm test && tsc",
+    "build": "tsc",
     "test": "jest",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "test:watch": "jest --watch",
