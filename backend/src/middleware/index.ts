@@ -8,15 +8,30 @@ import { config } from "../config";
 const setupMiddleware = (app: express.Express): void => {
   // Security
   app.use(helmet());
+  
   // CORS configuration
-  app.use(
-    cors({
-      origin: ["https://www.trywatchwise.com", "https://trywatchwise.com", "http://localhost:3000"],
-      credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization", "User-Timezone", "Google-Provider-Token"],
-    })
-  );
+  const corsOptions = {
+    origin: function(origin: any, callback: any) {
+      const allowedOrigins = [
+        'https://www.trywatchwise.com', 
+        'https://trywatchwise.com', 
+        'http://localhost:3000'
+      ];
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'User-Timezone', 'Google-Provider-Token'],
+    exposedHeaders: ['Access-Control-Allow-Origin'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+  };
+
+  app.use(cors(corsOptions));
 
   // Request Parsing
   app.use(express.json());
