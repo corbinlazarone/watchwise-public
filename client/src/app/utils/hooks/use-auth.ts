@@ -64,9 +64,7 @@ export function useAuth() {
         },
       });
       if (error) throw error;
-      if (data) {
-        router.push("/pages/channels");
-      }
+      return data;
     } catch (error) {
       console.error("Google sign-in error: ", error);
       throw error;
