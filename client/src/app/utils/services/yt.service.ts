@@ -18,7 +18,7 @@ const refreshAuthState = async () => {
           provider: 'google',
           options: {
             scopes: 'https://www.googleapis.com/auth/youtube.readonly',
-            redirectTo: `${window.location.origin}/pages/callback`
+            redirectTo: `https://www.trywatchwise.com//pages/callback`
           }
         });
         return null; // The OAuth flow will handle the redirect
