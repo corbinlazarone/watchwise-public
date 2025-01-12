@@ -54,7 +54,7 @@ export function useAuth() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: "http://localhost:3000/pages/callback",
+          redirectTo: "https://trywatchwise.com/pages/callback",
           scopes:
             "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube",
           queryParams: {
