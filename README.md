@@ -10,4 +10,4 @@ A responsive full stack app that allows users to see their most liked youtubers 
 - **Supabase** - Backend as a service, used for database and Oauth With Google
 
 ## APIs used
-- **Youtube Data API ** - Liked videos and Subscribed to channels
+- **Youtube Data API** - Liked videos and Subscribed to channels
